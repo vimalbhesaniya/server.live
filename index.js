@@ -1081,7 +1081,7 @@ app.get("/authenitcation", verifyToken, (req, res) => {
         status: true
     })
 })
-// app.listen(5500, () => console.log("server started..."));
+app.listen(5500, () => console.log("server started..."));
 
 
 app.get("/getFollowers/:id", async (req, res) => {
@@ -1204,4 +1204,3 @@ app.get("/filter/user", async (req, res) => {
       });
     }
   });
-  module.exports = app
