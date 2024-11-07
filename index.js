@@ -110,43 +110,33 @@ app.post("/EmailSend", async(req,res)=>{
 
 // Login Authentication api
 app.post("/login", async (req, res) => {
-    if (req.body.password && req.body.email) {
+    try {
+        if (!req.body.password || !req.body.email) {
+            return res.send({ serverError: "Something went wrong" });
+        }
+
         const email = req.body.email;
         const data = await User.findOne({ email: email });
-        if (data) {
-            const pwdMatch = await encrypt.compare(
-                req.body.password,
-                data.password
-            );
-            if (pwdMatch) {
-                jwt.sign({ data }, key, { expiresIn: "1d" }, (err, token) => {
-                    err
-                        ? res.send("something went wrong")
-                        : res.send({ data, token: token, id: data._id });
-                });
-            } else {
-                res.send({ error: "Password incorrect" });
-            }
-        } else {
-            res.send({ error: "User not found" });
-        }   
-    } else {
-        res.send({ serverError: "Somthing went wrong" });
-        console.log(req.body);
-        if (req.body.password && req.body.email) {
-            let data = await User.findOne(req.body).select("-password");
-            if (data) {
-                jwt.sign({ data }, key, { expiresIn: "1d" }, (err, token) => {
-                    err
-                        ? res.send("something went wrong")
-                        : res.send({ data, token: token });
-                });
-            } else {
-                res.send({ result: "User  not found" });
-            }
-        } else {
-            res.send({ result: "Something Missing" });
+
+        if (!data) {
+            return res.send({ error: "User not found" });
         }
+
+        const pwdMatch = await encrypt.compare(req.body.password, data.password);
+
+        if (!pwdMatch) {
+            return res.send({ error: "Password incorrect" });
+        }
+
+        jwt.sign({ data }, key, { expiresIn: "1d" }, (err, token) => {
+            if (err) {
+                return res.send("Something went wrong");
+            }
+            res.send({ data, token: token, id: data._id });
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ serverError: "Internal Server Error" });
     }
 });
 
