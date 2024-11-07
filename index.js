@@ -27,16 +27,15 @@ const { log } = require("console");
 // const multer = require("multer");
 
 //
-// app.use(cors());
+app.use(cors());
 app.use(express.json());
 
 app.use(cors({
-    origin: 'https://jobduniya-live.vercel.app/',
+    origin: 'https://jobduniya-live.vercel.app/*',
     optionsSuccessStatus: 200,
     credentials: true
 }));
 
-app.options('*', cors({ origin: 'https://jobduniya-live.vercel.app' }));
 
 
 function generateOTP(length = 6) {
