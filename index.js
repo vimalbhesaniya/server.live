@@ -110,9 +110,7 @@ app.post("/EmailSend", async(req,res)=>{
 
 // Login Authentication api
 app.post("/login", async (req, res) => {
-    try {
     if (req.body.password && req.body.email) {
-
         const email = req.body.email;
         const data = await User.findOne({ email: email });
         if (data) {
@@ -150,9 +148,6 @@ app.post("/login", async (req, res) => {
             res.send({ result: "Something Missing" });
         }
     }
-} catch (err) {
-    res.send(err)
-}
 });
 
 // get all users
