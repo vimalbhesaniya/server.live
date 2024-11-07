@@ -35,6 +35,11 @@ app.use(cors({
     optionsSuccessStatus: 200,
     credentials: true
 }));
+// app.use(cors({
+//     origin: 'https://jobduniya-live.vercel.app/*',
+//     optionsSuccessStatus: 200,
+//     credentials: true
+// }));
 
 app.options('*', cors({ origin: 'https://jobduniya-live.vercel.app' }));
 
@@ -116,6 +121,7 @@ app.post("/EmailSend", async(req,res)=>{
 app.post("/login", async (req, res) => {
     if (req.body.password && req.body.email) {
         const email = req.body.email;
+        res.setHeader("Access-Control-Allow-Origin", "*");
         const data = await User.findOne({ email: email });
         if (data) {
             const pwdMatch = await encrypt.compare(
@@ -124,6 +130,7 @@ app.post("/login", async (req, res) => {
             );
             if (pwdMatch) {
                 jwt.sign({ data }, key, { expiresIn: "1d" }, (err, token) => {
+                    
                     err
                         ? res.send("something went wrong")
                         : res.send({ data, token: token, id: data._id });
