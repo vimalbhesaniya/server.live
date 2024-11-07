@@ -32,7 +32,11 @@ app.use(express.json());
 
 app.use(cors({
     origin: 'https://jobduniya-live.vercel.app/',
+    optionsSuccessStatus: 200,
+    credentials: true
 }));
+
+app.options('*', cors({ origin: 'https://jobduniya-live.vercel.app' }));
 
 
 function generateOTP(length = 6) {
@@ -110,33 +114,43 @@ app.post("/EmailSend", async(req,res)=>{
 
 // Login Authentication api
 app.post("/login", async (req, res) => {
-    try {
-        if (!req.body.password || !req.body.email) {
-            return res.send({ serverError: "Something went wrong" });
-        }
-
+    if (req.body.password && req.body.email) {
         const email = req.body.email;
         const data = await User.findOne({ email: email });
-
-        if (!data) {
-            return res.send({ error: "User not found" });
-        }
-
-        const pwdMatch = await encrypt.compare(req.body.password, data.password);
-
-        if (!pwdMatch) {
-            return res.send({ error: "Password incorrect" });
-        }
-
-        jwt.sign({ data }, key, { expiresIn: "1d" }, (err, token) => {
-            if (err) {
-                return res.send("Something went wrong");
+        if (data) {
+            const pwdMatch = await encrypt.compare(
+                req.body.password,
+                data.password
+            );
+            if (pwdMatch) {
+                jwt.sign({ data }, key, { expiresIn: "1d" }, (err, token) => {
+                    err
+                        ? res.send("something went wrong")
+                        : res.send({ data, token: token, id: data._id });
+                });
+            } else {
+                res.send({ error: "Password incorrect" });
             }
-            res.send({ data, token: token, id: data._id });
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ serverError: "Internal Server Error" });
+        } else {
+            res.send({ error: "User not found" });
+        }   
+    } else {
+        res.send({ serverError: "Somthing went wrong" });
+        console.log(req.body);
+        if (req.body.password && req.body.email) {
+            let data = await User.findOne(req.body).select("-password");
+            if (data) {
+                jwt.sign({ data }, key, { expiresIn: "1d" }, (err, token) => {
+                    err
+                        ? res.send("something went wrong")
+                        : res.send({ data, token: token });
+                });
+            } else {
+                res.send({ result: "User  not found" });
+            }
+        } else {
+            // res.send({ result: "Something Missing" });
+        }
     }
 });
 
@@ -959,7 +973,7 @@ app.get("/notFollowedCompany/:userId/:limit", async (req, res) => {
                 $and: [
                     { _id: { $ne: userId } },
                     { _id: { $nin: usersNotFollowed.targetId } }
-                ]
+                ] 
             }).limit(limit);
             res.send(users);
         } else {
@@ -1194,3 +1208,4 @@ app.get("/filter/user", async (req, res) => {
       });
     }
   });
+  module.exports = app
