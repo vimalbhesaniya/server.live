@@ -30,18 +30,16 @@ const { log } = require("console");
 app.use(cors());
 app.use(express.json());
 
-app.use(cors({
-    origin: 'https://jobduniya-live.vercel.app/',
-    optionsSuccessStatus: 200,
-    credentials: true
-}));
 // app.use(cors({
-//     origin: 'https://jobduniya-live.vercel.app/*',
+//     origin: 'https://jobduniya-live.vercel.app/',
 //     optionsSuccessStatus: 200,
 //     credentials: true
 // }));
-
-
+// app.use(cors({
+//     origin: 'https://jobduniya-live.vercel.app/*', 
+//     optionsSuccessStatus: 200,
+//     credentials: true
+// }));
 
 function generateOTP(length = 6) {
     const buffer = crypto.randomBytes(Math.ceil(length / 2));
@@ -211,6 +209,7 @@ app.get("/checkisvalid", verifyToken, async (req, res) => {
 
 // user registration api
 app.post("/addUser", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
     req.body.password = await encrypt.hash(req.body.password, 10);
     const email = req.body.email;
     const user = await User.find({ email: email });
@@ -232,10 +231,10 @@ app.post("/addUser", async (req, res) => {
 });
 
 app.post("/Apply", async (req, res) => {
-
     try {
         const finaldata = new JobApplications(req.body);
         console.log(finaldata);
+        res.setHeader("Access-Control-Allow-Origin", "*");
         JobApplications.insertMany(finaldata)
             .then((e) => {
                 res.status(201).send({ _id: e[0]._id });
@@ -251,6 +250,7 @@ app.post("/Apply", async (req, res) => {
 app.post("/addCompany", async (req, res) => {
     req.body.Password = await encrypt.hash(req.body.Password, 10);
     const email = req.body.Email;
+    res.setHeader("Access-Control-Allow-Origin", "*");
     const company = await Company.find({ Email: email });
     if (company.length) {
         res.send({
@@ -271,6 +271,7 @@ app.post("/addCompany", async (req, res) => {
 
 app.post("/addJob", async (req, res) => {
     const finaldata = new JobPost(req.body);
+    res.setHeader("Access-Control-Allow-Origin", "*");
     JobPost.insertMany(finaldata)
         .then((e) => {
             res.status(201).send({ _id: e[0]._id });
@@ -527,6 +528,7 @@ app.get("/fetchConnectedCompany/:id", async (req, res) => {
 // company registration api
 app.post("/Insert/:tbl", async (req, res) => {
     const tablename = req.params.tbl;
+    res.setHeader("Access-Control-Allow-Origin", "*");
     if (!tablename) {
         return res.status(400).send("Table name not provided");
     }
@@ -597,6 +599,7 @@ app.post("/Insert/:tbl", async (req, res) => {
 
 app.post("/savedJob", async (req, res) => {
     const UserID = req.body.userId;
+    res.setHeader("Access-Control-Allow-Origin", "*");
     const JobID = req.body.jobId;
     console.log(req.body);
     if (!UserID || !JobID) {
@@ -615,6 +618,7 @@ app.post("/savedJob", async (req, res) => {
 
 app.post("/deleteSaveJob", async (req, res) => {
     const ID = req.body.id;
+    res.setHeader("Access-Control-Allow-Origin", "*");
     SavedJob.deleteOne({ _id: ID })
         .then((e) => {
             res.status(201).send(e);
@@ -667,6 +671,7 @@ app.get("/fetchAppliedJobs/:id", async (req , res) => {
 app.post("/connectTocompany", async (req, res) => {
     const userid = req.body.userId;
     const companyid = req.body.companyId;
+    res.setHeader("Access-Control-Allow-Origin", "*");
     if (!userid || !companyid) {
         return res.status(400).send("User Id and Comapny Id are not provided");
     } else {
@@ -683,6 +688,7 @@ app.post("/connectTocompany", async (req, res) => {
 
 app.post("/followTouser", async (req, res) => {
     const finaldata = new UserFollow(req.body);
+    res.setHeader("Access-Control-Allow-Origin", "*");
     UserFollow.insertMany(finaldata)
         .then((e) => {
             res.status(201).send(e);
@@ -763,10 +769,10 @@ app.get("/CompanyListing", async (req, res) => {
     }
 });
 app.post("/Clogin", async (req, res) => {
-
     try {
         if (req.body.password && req.body.email) {
             const email = req.body.email;
+            res.setHeader("Access-Control-Allow-Origin", "*");
             const data = await Company.findOne({ Email: email });
             console.log(data);
             if (data) {
@@ -798,6 +804,7 @@ app.post("/Clogin", async (req, res) => {
 
 app.post("/forgot", async (req, res) => {
     const oneTimeOTP = generateOTP();
+    res.setHeader("Access-Control-Allow-Origin", "*");
     const to = req.body.email;
     const user = await User.findOne({ email: req.body.email });
     if (user) {
@@ -824,6 +831,7 @@ app.post("/forgot", async (req, res) => {
 
 app.post("/SendMailToApplicient", async (req, res) => {
     try{
+        res.setHeader("Access-Control-Allow-Origin", "*");
         const to = req.body.recipientEmail;
         const subject = req.body.subject;
         const html = req.body.message
@@ -838,6 +846,7 @@ app.post("/SendMailToApplicient", async (req, res) => {
 
 app.post("/checkOTP", async (req, res) => {
     const ConOTP = req.body.otp;
+    res.setHeader("Access-Control-Allow-Origin", "*");
     const user = await User.findOne({ email: req.body.email });
     // res.send(user)
     if (ConOTP === user.secretKey) {
@@ -872,6 +881,7 @@ app.put("/changePwd", async (req, res) => {
 app.post("/verify", async (req, res) => {
     const ConOTP = req.body.otp;
     const email = req.body.email;
+    res.setHeader("Access-Control-Allow-Origin", "*");
     const company = await Company.findOne({
         Email_ID: req.body.email,
         secretKey: req.body.otp,
@@ -895,11 +905,13 @@ app.post("/verify", async (req, res) => {
 app.post("/FileUpload", async (req, res) => {
     const file = req.body.file;
     res.send(file);
+    res.setHeader("Access-Control-Allow-Origin", "*");
     // handleFileUpload(file);
 });
 
 app.post("/userWhoPerformFollow", async (req, res) => {
     const id = req.body.userId;
+    res.setHeader("Access-Control-Allow-Origin", "*");
     if (!id) {
         return res.status(400).send("User Id and Job Id are not provided");
     } else {
@@ -915,6 +927,7 @@ app.post("/userWhoPerformFollow", async (req, res) => {
 })
 app.post("/userWhoPerformFollowToCompany", async (req, res) => {
     const id = req.body.userId;
+    res.setHeader("Access-Control-Allow-Origin", "*");
     if (!id) {
         return res.status(400).send("User Id and Job Id are not provided");
     } else {
