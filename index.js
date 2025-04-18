@@ -198,7 +198,7 @@ app.get("/profile/:ID", verifyToken, async (req, res) => {
 app.get("/company/:ID", verifyToken, async (req, res) => {
   try {
     const id = req.params.ID;
-    const company = await Company.find({ _id: id }).select("-password");
+    const company = await Company.findOne({ _id: id }).select("-password");
     res.send({ data: company, message: "Company fetched Successfully" });
   } catch (e) {
     res.send({ message: "Failed to fetch company", error: e });
@@ -668,7 +668,7 @@ app.get("/fetchAppliedJobs/:id", async (req, res) => {
     const id = req.params.id;
     const list = await JobApplications.find({ userId: id });
 
-    console.log('call--list', list);
+    console.log("call--list", list);
 
     res.send({ data: list, message: "Applied Jobs fetched successfully" });
   } catch (e) {
@@ -1104,14 +1104,14 @@ app.patch("/api/companyfollow/:userId/remove/:targetId", async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 });
-app.delete("/delete", async (req, res) => {
+app.post("/delete", async (req, res) => {
   try {
     console.log(req.body);
     const where = req.body.WHERE;
     console.log(where);
     const tablename = req.body.COLLECTION_NAME;
     if (!tablename) {
-      return res.status(400).send("Table name not provided");
+      return res.status(400).send({ message: "Table name not provided" });
     }
     const Model = mongoose.model(tablename);
     if (!Model) {
@@ -1197,7 +1197,10 @@ app.get("/applied-users/:companyId", async (req, res) => {
     const companyId = req.params.companyId;
     // Use aggregation to find userIds who applied for jobs for the given company
     const appliedUsers = await JobApplications.find({ cId: companyId });
-    res.json(appliedUsers);
+    res.json({
+      data: appliedUsers,
+      message: "Applied Users fetched successfully",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
@@ -1207,7 +1210,7 @@ app.get("/applied-users/:companyId", async (req, res) => {
 app.get("/FetchCompanyJobs/:id", async (req, res) => {
   try {
     const result = await JobPost.find({ company: req.params.id });
-    res.send(result);
+    res.send({ data: result, message: "Company jobs fetched successfully" });
   } catch (e) {
     res.send(e);
   }
